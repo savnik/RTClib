@@ -106,8 +106,6 @@ public:
     static void adjust(const DateTime& dt);
     uint8_t isrunning(void);
     static DateTime now();
-    static Ds1342SqwPinMode readSqwPinMode();
-    static void writeSqwPinMode(Ds1342SqwPinMode mode);
     byte readControlRegister(void);
     void writeControlRegister(byte mode);
     byte readStatusRegister(void);
@@ -119,6 +117,7 @@ public:
     void enableAlarm(int alarm);
     void disableAlarm(int alarm);
     void clearAlarm(int alarm);
+    bool statusAlarm(int alarm);
 };
 
 // RTC based on the DS3231 chip connected via I2C and the Wire library

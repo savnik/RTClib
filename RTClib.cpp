@@ -548,10 +548,10 @@ void RTC_DS1342::sqwOutput(int mode){
 // DS1342 has only two alarms
 void RTC_DS1342::enableAlarm(int alarm){
   byte control_register = readControlRegister();
-  if(alarm = 1){
+  if(alarm == 1){
     control_register |= B00000001;
   }
-  else if(alarm = 2){
+  else if(alarm == 2){
     control_register |= B00000010;
   }
   writeControlRegister(control_register);
@@ -560,10 +560,10 @@ void RTC_DS1342::enableAlarm(int alarm){
 
 void RTC_DS1342::disableAlarm(int alarm){
   byte control_register = readControlRegister();
-  if(alarm = 1){
+  if(alarm == 1){
     control_register &= B11111110;
   }
-  else if(alarm = 2){
+  else if(alarm == 2){
     control_register &= B1111101;
   }
   writeControlRegister(control_register);
@@ -571,14 +571,26 @@ void RTC_DS1342::disableAlarm(int alarm){
 
 
 void RTC_DS1342::clearAlarm(int alarm){
-    byte status_register = readStatusRegister();
-  if(alarm = 1){
+  byte status_register = readStatusRegister();
+  if(alarm == 1){
     status_register &= B11111110;
   }
-  else if(alarm = 2){
+  else if(alarm == 2){
     status_register &= B1111101;
   }
-  writestatusRegister(status_register);
+  writeStatusRegister(status_register);
+}
+
+
+bool RTC_DS1342::statusAlarm(int alarm){
+  byte status_register = readStatusRegister();
+  if(alarm == 1){
+    return (status_register & B00000001);
+  }
+  else if(alarm == 2){
+    return (status_register & B00000010);
+  }
+  return false; // Error
 }
 
 
