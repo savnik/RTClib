@@ -9,7 +9,6 @@
 DateTime	KEYWORD1
 RTC_DS1307	KEYWORD1
 RTC_Millis	KEYWORD1
-Ds1307SqwPinMode	KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
@@ -25,11 +24,18 @@ dayOfWeek	KEYWORD2
 secondstime	KEYWORD2
 unixtime	KEYWORD2
 begin	KEYWORD2
+init	KEYWORD2
 adjust	KEYWORD2
 isrunning	KEYWORD2
 now	KEYWORD2
-readSqwPinMode	KEYWORD2
-writeSqwPinMode	KEYWORD2
+enableAlarm	KEYWORD2
+disableAlarm	KEYWORD2
+clearAlarm	KEYWORD2
+statusAlarm KEYWORD2
+sqwOutputMode	KEYWORD2
+interruptOutputMode	KEYWORD2
+enableGlitchFilter	KEYWORD2
+enableOscillator	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)

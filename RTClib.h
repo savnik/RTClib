@@ -100,16 +100,12 @@ public:
 enum Ds1342SqwPinMode { DS1342_OFF = 0x80, DS1342_ON = 0x00, DS1342_SquareWave1HZ = 0x00, DS1342_SquareWave4kHz = 0x08, DS1342_SquareWave8kHz = 0x10, DS1342_SquareWave32kHz = 0x18 };
 
 class RTC_DS1342 {
-public:
+  public:
     bool begin(void);
     bool init(void);
     static void adjust(const DateTime& dt);
     uint8_t isrunning(void);
     static DateTime now();
-    byte readControlRegister(void);
-    void writeControlRegister(byte mode);
-    byte readStatusRegister(void);
-    void writeStatusRegister(byte mode);
     void enableOscillator(bool en);
     void enableGlitchFilter(bool en);
     void interruptOutputMode(int mode);
@@ -118,6 +114,12 @@ public:
     void disableAlarm(int alarm);
     void clearAlarm(int alarm);
     bool statusAlarm(int alarm);
+
+  private:
+    byte readControlRegister(void);
+    void writeControlRegister(byte mode);
+    byte readStatusRegister(void);
+    void writeStatusRegister(byte mode);
 };
 
 // RTC based on the DS3231 chip connected via I2C and the Wire library
