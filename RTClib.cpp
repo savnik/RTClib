@@ -570,6 +570,18 @@ void RTC_DS1342::disableAlarm(int alarm){
 }
 
 
+void RTC_DS1342::clearAlarm(int alarm){
+    byte status_register = readStatusRegister();
+  if(alarm = 1){
+    status_register &= B11111110;
+  }
+  else if(alarm = 2){
+    status_register &= B1111101;
+  }
+  writestatusRegister(status_register);
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // RTC_Millis implementation
 

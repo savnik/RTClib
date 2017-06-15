@@ -118,6 +118,7 @@ public:
     void sqwOutput(int mode);
     void enableAlarm(int alarm);
     void disableAlarm(int alarm);
+    void clearAlarm(int alarm);
 };
 
 // RTC based on the DS3231 chip connected via I2C and the Wire library
