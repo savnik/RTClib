@@ -235,6 +235,8 @@ TimeSpan TimeSpan::operator-(const TimeSpan& right) {
 
 static uint8_t bcd2bin (uint8_t val) { return val - 6 * (val >> 4); }
 static uint8_t bin2bcd (uint8_t val) { return val + 6 * (val / 10); }
+//static uint8_t bcd2bin (uint8_t val) { return (val/10*16) + (val%10); }
+//static uint8_t bin2bcd (uint8_t val) { return (val/16*10) + (val%16); }
 
 boolean RTC_DS1307::begin(void) {
   Wire.begin();
@@ -333,6 +335,189 @@ uint8_t RTC_DS1307::readnvram(uint8_t address) {
 void RTC_DS1307::writenvram(uint8_t address, uint8_t data) {
   writenvram(address, &data, 1);
 }
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// RTC_DS1342 implementation
+// https://www.maximintegrated.com/en/app-notes/index.mvp/id/5791
+
+
+bool RTC_DS1342::begin(void) {
+  Wire.begin();
+  return true;
+}
+
+// Set configuration
+// Enable Oscillator, Disable glitch filter, Setup up two interrupts - but disable them, disable oscilator stop flag, use crystal oscillator
+bool RTC_DS1342::init(void) {
+  // Setup control register
+  Wire.beginTransmission(DS1342_ADDRESS);
+  Wire.write((byte)DS1342_CONTROL);
+  byte control_register = B00000000;
+  // Enable Oscilator output (NOT EOSC)
+  control_register &= B01111111;
+  // Disable glitch filter EGFIL to save power
+  control_register &= B11011111;
+  // SQW Output - set to 32KHz
+  control_register |= B00011000;
+  // Interrupt control (INTCN) - setup for interrupt on INTB
+  control_register |= B00000100;
+  // Disable alarms
+  control_register &= B11111100;
+  Wire.write(control_register);
+  Wire.endTransmission();
+
+  // Setup control / status register
+  Wire.beginTransmission(DS1342_ADDRESS);
+  Wire._I2C_WRITE((byte)DS1342_STATUSREG);
+  byte status_register = B0000000;
+  // Oscillator stop flag - clear
+  status_register &= B01111111;
+  // Disable oscillator stop flag to reduce power
+  status_register |= B01000000;
+  // Loss of signal - clear
+  status_register &= B11011111;
+  // Select source clock - 32.7KHz
+  status_register |= B00011000;
+  // Disable external clock input
+  status_register &= B11111011; 
+  // Clear alarm registers
+  status_register &= B11111100;
+
+  Wire._I2C_WRITE(status_register);
+  Wire.endTransmission();
+  return true;
+}
+
+uint8_t RTC_DS1342::isrunning(void) {
+  Wire.beginTransmission(DS1342_ADDRESS);
+  Wire._I2C_WRITE((byte)0);
+  Wire.endTransmission();
+
+  Wire.requestFrom(DS1342_ADDRESS, 1);
+  uint8_t ss = Wire._I2C_READ();
+  return !(ss>>7);
+}
+
+void RTC_DS1342::adjust(const DateTime& dt) {
+  Wire.beginTransmission(DS1342_ADDRESS);
+  Wire._I2C_WRITE((byte)0); // start at location 0
+  Wire._I2C_WRITE(bin2bcd(dt.second()));
+  Wire._I2C_WRITE(bin2bcd(dt.minute()));
+  Wire._I2C_WRITE(bin2bcd(dt.hour()));
+  Wire._I2C_WRITE(bin2bcd(0)); // day of week is calculated on the device
+  Wire._I2C_WRITE(bin2bcd(dt.day()));
+  Wire._I2C_WRITE(bin2bcd(dt.month()));
+  Wire._I2C_WRITE(bin2bcd(dt.year() - 2000));
+  Wire.endTransmission();
+}
+
+DateTime RTC_DS1342::now() {
+  Wire.beginTransmission(DS1342_ADDRESS);
+  Wire._I2C_WRITE((byte)0); 
+  Wire.endTransmission();
+
+  Wire.requestFrom(DS1342_ADDRESS, 7);
+  uint8_t ss = bcd2bin(Wire._I2C_READ());
+  uint8_t mm = bcd2bin(Wire._I2C_READ());
+  uint8_t hh = bcd2bin(Wire._I2C_READ());
+  Wire._I2C_READ(); // day of week
+  uint8_t d = bcd2bin(Wire._I2C_READ());
+  uint8_t m = bcd2bin(Wire._I2C_READ() & B01111111);
+  uint16_t y = bcd2bin(Wire._I2C_READ()) + 2000;
+  return DateTime (y, m, d, hh, mm, ss);
+}
+
+
+byte RTC_DS1342::readControlRegister(void){
+  Wire.beginTransmission(DS1342_ADDRESS);
+  Wire._I2C_WRITE(DS1342_CONTROL);
+  Wire.endTransmission();
+  Wire.requestFrom((uint8_t)DS1342_ADDRESS, (uint8_t)1);
+  byte mode = Wire._I2C_READ();
+  return mode;
+}
+
+void RTC_DS1342::writeControlRegister(byte mode){
+  Wire.beginTransmission(DS1342_ADDRESS);
+  Wire._I2C_WRITE((byte)DS1342_CONTROL);
+  Wire._I2C_WRITE(mode);
+  Wire.endTransmission();
+}
+
+
+byte RTC_DS1342::readStatusRegister(void){
+  Wire.beginTransmission(DS1342_ADDRESS);
+  Wire._I2C_WRITE(DS1342_STATUSREG);
+  Wire.endTransmission();
+  Wire.requestFrom((uint8_t)DS1342_ADDRESS, (uint8_t)1);
+  byte mode = Wire._I2C_READ();
+  return mode;
+}
+
+void RTC_DS1342::writeStatusRegister(byte mode){
+  Wire.beginTransmission(DS1342_ADDRESS);
+  Wire._I2C_WRITE((byte)DS1342_STATUSREG);
+  Wire._I2C_WRITE(mode);
+  Wire.endTransmission();
+}
+
+
+// Enable or disable oscilator output EOSC
+void RTC_DS1342::enableOscillator(bool en){
+  byte control_register = readControlRegister();
+  if(en){
+    control_register &= B01111111;
+  }
+  else{
+    control_register |= B10000000;
+  }
+  writeControlRegister(control_register);
+}
+
+// Enable glitch filter, disabling will reduce power consuption
+void RTC_DS1342::enableGlitchFilter(bool en){
+  byte control_register = readControlRegister();
+  if(en){
+    control_register |= B01000000;
+  }
+  else{
+    control_register &= B10111111;
+  }
+  writeControlRegister(control_register);
+}
+
+
+// Interrupt Output Routing
+// INTCN   ECLK  | CLKIN/!INTA   SQW/!INTB    MODE
+//  0       0    | A1F + A2F        SQW         1
+//  0       1    | CLKIN Input      SQW         2
+//  1       0    |  A1F             A2F         3
+//  1       1    | CLKIN Input      A1F+A2F     4
+
+// enable SQW on SQW/!INTB
+void RTC_DS1342::interruptOutputMode(int mode){
+  byte control_register = readControlRegister();
+  byte status_register = readStatusRegister();
+  if (mode == 1){
+    control_register &= B11111011;
+    status_register &= B11111011;
+  }
+  else if(mode == 2){
+    control_register &= B11111011;
+    status_register |= B00000100;
+  }
+  else if(mode == 3){
+    control_register |= B00000100;
+    status_register &= B11111011;
+  }
+  else if(mode == 4){
+    control_register |= B00000100;
+    status_register |= B00000100;
+  }
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // RTC_Millis implementation

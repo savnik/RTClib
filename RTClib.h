@@ -16,6 +16,10 @@ class TimeSpan;
 #define DS1307_CONTROL  0x07
 #define DS1307_NVRAM    0x08
 
+#define DS1342_ADDRESS  0x68
+#define DS1342_CONTROL  0x0E
+#define DS1342_STATUSREG    0x0F
+
 #define DS3231_ADDRESS  0x68
 #define DS3231_CONTROL  0x0E
 #define DS3231_STATUSREG 0x0F
@@ -90,6 +94,27 @@ public:
     void readnvram(uint8_t* buf, uint8_t size, uint8_t address);
     void writenvram(uint8_t address, uint8_t data);
     void writenvram(uint8_t address, uint8_t* buf, uint8_t size);
+};
+
+// RTC based on the DS1342 chip connected via I2C and the Wire library
+enum Ds1342SqwPinMode { DS1342_OFF = 0x80, DS1342_ON = 0x00, DS1342_SquareWave1HZ = 0x00, DS1342_SquareWave4kHz = 0x08, DS1342_SquareWave8kHz = 0x10, DS1342_SquareWave32kHz = 0x18 };
+
+class RTC_DS1342 {
+public:
+    bool begin(void);
+    bool init(void);
+    static void adjust(const DateTime& dt);
+    uint8_t isrunning(void);
+    static DateTime now();
+    static Ds1342SqwPinMode readSqwPinMode();
+    static void writeSqwPinMode(Ds1342SqwPinMode mode);
+    byte readControlRegister(void);
+    void writeControlRegister(byte mode);
+    byte readStatusRegister(void);
+    void writeStatusRegister(byte mode);
+    void enableOscillator(bool en);
+    void enableGlitchFilter(bool en);
+    void interruptOutputMode(int mode);
 };
 
 // RTC based on the DS3231 chip connected via I2C and the Wire library
