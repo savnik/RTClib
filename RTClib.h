@@ -115,7 +115,9 @@ public:
     void enableOscillator(bool en);
     void enableGlitchFilter(bool en);
     void interruptOutputMode(int mode);
-    void RTC_DS1342::sqwOutput(int mode);
+    void sqwOutput(int mode);
+    void enableAlarm(int alarm);
+    void disableAlarm(int alarm);
 };
 
 // RTC based on the DS3231 chip connected via I2C and the Wire library
