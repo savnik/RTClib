@@ -545,6 +545,30 @@ void RTC_DS1342::sqwOutput(int mode){
   writeControlRegister(control_register);
 }
 
+// DS1342 has only two alarms
+void RTC_DS1342::enableAlarm(int alarm){
+  byte control_register = readControlRegister();
+  if(alarm = 1){
+    control_register |= B00000001;
+  }
+  else if(alarm = 2){
+    control_register |= B00000010;
+  }
+  writeControlRegister(control_register);
+}
+
+
+void RTC_DS1342::disableAlarm(int alarm){
+  byte control_register = readControlRegister();
+  if(alarm = 1){
+    control_register &= B11111110;
+  }
+  else if(alarm = 2){
+    control_register &= B1111101;
+  }
+  writeControlRegister(control_register);
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // RTC_Millis implementation
