@@ -593,6 +593,31 @@ bool RTC_DS1342::statusAlarm(int alarm){
   return false; // Error
 }
 
+// Set the alarm
+// OBS: 
+// No year/month support 
+// Alarm 2 does not have seconds!
+void RTC_DS1342::setAlarm(int alarm, uint8_t second, uint8_t minute, uint8_t hour, uint8_t day){
+  if(alarm == 1){
+    Wire.beginTransmission(DS1342_ADDRESS);
+    Wire._I2C_WRITE((byte)07); // start at location 0
+    Wire._I2C_WRITE(bin2bcd(second));
+    Wire._I2C_WRITE(bin2bcd(minute));
+    Wire._I2C_WRITE(bin2bcd(hour));
+    Wire._I2C_WRITE(bin2bcd(day));
+    Wire.endTransmission();
+    
+  }
+  else if(alarm == 2){
+    Wire.beginTransmission(DS1342_ADDRESS);
+    Wire._I2C_WRITE((byte)0b); // start at location 0
+    Wire._I2C_WRITE(bin2bcd(minute));
+    Wire._I2C_WRITE(bin2bcd(hour));
+    Wire._I2C_WRITE(bin2bcd(day));
+    Wire.endTransmission();
+  }
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // RTC_Millis implementation
