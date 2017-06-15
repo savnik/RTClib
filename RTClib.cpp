@@ -516,6 +516,33 @@ void RTC_DS1342::interruptOutputMode(int mode){
     control_register |= B00000100;
     status_register |= B00000100;
   }
+  writeControlRegister(control_register);
+  writeStatusRegister(status_register);
+}
+
+// If sqw out is configured the output frequency can be controlled here.
+//    freq    | mode
+//  1Hz       |   1
+//  4.098kHz  |   2
+//  8.192kHz  |   3
+//  32.786kHz |   4
+void RTC_DS1342::sqwOutput(int mode){
+  byte control_register = readControlRegister();
+  if (mode == 1){
+    control_register &= B11100111;
+  }
+  else if (mode == 2){
+    control_register &= B11101111;
+    control_register |= B00001000;
+  }
+  else if (mode == 3){
+    control_register &= B11110111;
+    control_register |= B00010000;
+  }
+  else if (mode == 4){
+    control_register |= B00011000;
+  }
+  writeControlRegister(control_register);
 }
 
 
