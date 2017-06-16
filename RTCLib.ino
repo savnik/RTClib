@@ -22,8 +22,18 @@ void setup(){
   Serial.println(__DATE__);
   Serial.println(__TIME__);
   rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-  rtc.readControlRegister();
 
+  Serial.println("Set alarm in 30 seconds");
+  DateTime now = DateTime(F(__DATE__), F(__TIME__));
+  rtc.setAlarm(1, now.second(), now.minute()+1, now.hour(), now.day());
+  rtc.setAlarm(2, now.second(), now.minute()+1, now.hour(), now.day());
+  rtc.interruptOutputMode(3);
+  rtc.clearAlarm(1);
+  rtc.clearAlarm(2);
+  rtc.enableAlarm(1);
+  rtc.enableAlarm(2);
+  pinMode(13,INPUT);
+  pinMode(12,INPUT_PULLUP);
   
 }
 
@@ -52,6 +62,17 @@ void loop(){
     Serial.println("d");
 
 
+    if(digitalRead(12) == LOW){
+      Serial.println("INTA");
+      rtc.clearAlarm(1);
+    }
+    if(digitalRead(13) == LOW){
+      Serial.println("INTB");
+      rtc.clearAlarm(2);
+    }
+    
+    Serial.println(rtc.readControlRegister(),BIN);
+    Serial.println(rtc.readStatusRegister(),BIN);
     Serial.println(".");
     delay(3000);
 

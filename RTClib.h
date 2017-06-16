@@ -116,7 +116,6 @@ class RTC_DS1342 {
     bool statusAlarm(int alarm);
     void setAlarm(int alarm, uint8_t second, uint8_t minute, uint8_t hour, uint8_t day);
 
-  private:
     byte readControlRegister(void);
     void writeControlRegister(byte mode);
     byte readStatusRegister(void);

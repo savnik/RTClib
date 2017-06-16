@@ -600,7 +600,7 @@ bool RTC_DS1342::statusAlarm(int alarm){
 void RTC_DS1342::setAlarm(int alarm, uint8_t second, uint8_t minute, uint8_t hour, uint8_t day){
   if(alarm == 1){
     Wire.beginTransmission(DS1342_ADDRESS);
-    Wire._I2C_WRITE((byte)07); // start at location 0
+    Wire._I2C_WRITE((byte)0x07); // start at location 0
     Wire._I2C_WRITE(bin2bcd(second));
     Wire._I2C_WRITE(bin2bcd(minute));
     Wire._I2C_WRITE(bin2bcd(hour));
@@ -610,7 +610,7 @@ void RTC_DS1342::setAlarm(int alarm, uint8_t second, uint8_t minute, uint8_t hou
   }
   else if(alarm == 2){
     Wire.beginTransmission(DS1342_ADDRESS);
-    Wire._I2C_WRITE((byte)0b); // start at location 0
+    Wire._I2C_WRITE((byte)0x0B); // start at location 0
     Wire._I2C_WRITE(bin2bcd(minute));
     Wire._I2C_WRITE(bin2bcd(hour));
     Wire._I2C_WRITE(bin2bcd(day));
